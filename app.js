@@ -24,23 +24,73 @@ var lcdLine = grid.set(0,0,2,3, contrib.lcd,
     color: 'red',
     elementSpacing: 4,
     elementPadding: 2
-  }
-);
+  });
 
+var barGraph = grid.set(3,0,4,3, contrib.stackedBar,
+    {
+        label: 'Form Status (#)',
+        barWidth: 4,
+        barSpacing: 8,
+        xOffset: 0,
+        //maxValue: 25,
+        height: "40%",
+        width: "50%",
+        barBgColor: [ 'red', 'blue'],
+    });
 // Render screen
 screen.render()
-  //, bar = contrib.stackedBar(
-       //{ label: 'Form Status (#)'
-       //, barWidth: 4
-       //, barSpacing: 8
-       //, xOffset: 0
-       ////, maxValue: 15
-       //, height: "40%"
-       //, width: "50%"
-       //, barBgColor: [ 'red', 'yellow', 'green', 'blue' ]})
 /*** End Widget Setup ***/
 
 /*** Data Setup ***/
+function update_bar_graph_data() {
+    // Setup default graph numbers
+    var cMDS = [0,0];
+    var cPBJ = [0,0];
+    var cREP = [0,0];
+    var c361x = [0,0];
+    var cLTCM = [0,0];
+    var cPL1 = [0,0];
+    //
+    // Parse through any alerts
+    for (i in ops_status.alerts){
+        alert = ops_status.alerts[i];
+        switch(i) {
+            case 'mds_batches':
+                cMDS[0] = alert.filter(x => overdue_sd(x.status_date)).length;
+                cMDS[1] = alert.length - cMDS[0];
+                break;
+            case 'pbj_batches':
+                cPBJ[0] = alert.filter(x => overdue_sd(x.status_date)).length;
+                cPBJ[1] = alert.length - cPBJ[0];
+                break;
+            case 'overdue_reports':
+                cREP[0] = alert.filter(x => overdue_sd(x.status_date)).length;
+                cREP[1] = alert.length - cREP[0];
+                break;
+            //case 'mds_batches':
+                //cMDS[0] = alert.filter(x => overdue_sd(x.status_date)).length;
+                //cMDS[1] = alert.length - cMDS[0];
+                //break;
+        }
+    }
+    barGraph.setData(
+        { barCategory: ['MDS', 'PBJ', 'REP', '361x', 'LTCM', 'PL1'],
+        stackedCategory: ['rs', 's'],
+        data:
+            [ cMDS
+            , cPBJ
+            , cREP
+            , c361x
+            , cLTCM
+            , cPL1 ]
+        }
+    );}
+
+function overdue_sd(sd) {
+    var status_date = moment(sd);
+    return moment().diff(status_date, 'minutes') > 30;
+}
+
 // API Check
 setInterval(function() {
     if (i_test_msg == t_msgs.length) i_test_msg = 0;
@@ -51,8 +101,11 @@ setInterval(function() {
         // We got a new status msg in so let's process it for all the widgets
         ops_status = ops_msg;
 
-        //lcdLine.setOptions({label: `Last Updated: ${ops_status.hb}`});
+        // Updated the LCD Status Line
         lcdLine.setLabel(`Last Updated: ${ops_status.hb}`);
+
+        // Update the bar graph
+        update_bar_graph_data()
     }
     else { console.log('No Update');}
     //console.log(t_msgs[i_test_msg]);
