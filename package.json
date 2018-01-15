@@ -1,0 +1,16 @@
+{
+  "name": "cli_ops_dashboard",
+  "version": "1.0.0",
+  "description": "Used to monitor batches, forms and anything else critical",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brandon Schrader",
+  "license": "ISC",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.8.5",
+    "moment": "^2.20.1"
+  }
+}
